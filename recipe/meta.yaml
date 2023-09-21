@@ -6,24 +6,23 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/langsmith-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: a998bbb2514951c6f7718a9bd426917eb95d694d9cfa2bfda54ab348d6c038f1
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
   number: 0
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
   entry_points:
     - langsmith = langsmith.cli.main:main
 
 requirements:
   host:
-    - python >=3.8,<4.0
+    - python
     - poetry-core
     - pip
   run:
-    - python >=3.8.1,<4.0
-    - pydantic >=1.0.0,<2.0.0
+    - python
+    - pydantic >=1.0.0,<3.0.0
     - requests >=2.0.0,<3.0.0
 
 test:
@@ -46,7 +45,7 @@ about:
   license: MIT
   license_family: MIT
   license_file: LICENSE
-  doc_url: https://docs.smith.langchain.com/docs/
+  doc_url: https://docs.smith.langchain.com/
   dev_url: https://github.com/langchain-ai/langchainplus-sdk
 
 extra:
