@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.0.39" %}
+{% set version = "0.0.87" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: a998bbb2514951c6f7718a9bd426917eb95d694d9cfa2bfda54ab348d6c038f1
+  sha256: 36c4cc47e5b54be57d038036a30fb19ce6e4c73048cd7a464b8f25b459694d34
 
 build:
   number: 0
@@ -30,11 +30,11 @@ test:
     - langsmith
     - langsmith.schemas
     - langsmith.client
+  requires:
+    - pip
   commands:
     - pip check
     - langsmith -h
-  requires:
-    - pip
 
 about:
   home: https://smith.langchain.com/
@@ -53,3 +53,5 @@ extra:
     - pavelzw
     - hinthornw
     - vowelparrot
+  skip-lints:
+    - missing_wheel
