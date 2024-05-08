@@ -27,15 +27,29 @@ requirements:
     - orjson >=3.9.14,<4.0.0
 
 test:
+  source_files:
+    - python/tests
+    - python/pyproject.toml
   imports:
     - langsmith
     - langsmith.schemas
     - langsmith.client
   requires:
     - pip
+    - pytest
+    - pytest-asyncio
+    - pytest-rerunfailures
+    - attrs
+    - dataclasses-json  # [py<312]
   commands:
     - pip check
-    - langsmith -h
+    # Requires dependent package langchain
+    {% set tests_to_skip = "test_as_runnable" %}
+    # Requires building from git repository
+    {% set tests_to_skip = tests_to_skip + " or test_git_info" %}
+    # Requires dataclasses-json
+    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})" --ignore="python/tests/unit_tests/test_client.py"  # [py>=312]
+    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"  # [py<312]
 
 about:
   home: https://smith.langchain.com/
