@@ -1,17 +1,17 @@
 {% set name = "langsmith" %}
-{% set version = "0.0.87" %}
+{% set version = "0.1.54" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 36c4cc47e5b54be57d038036a30fb19ce6e4c73048cd7a464b8f25b459694d34
-
+  url: https://github.com/langchain-ai/langsmith-sdk/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: b84646c6972719927bb44ce0d8f1f0753b90cefa3a3a99b112be7ac1ec7683c3
+  
 build:
   number: 0
-  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
+  script: {{ PYTHON }} -m pip install ./python --no-deps --no-build-isolation -vv
   entry_points:
     - langsmith = langsmith.cli.main:main
 
@@ -24,17 +24,33 @@ requirements:
     - python
     - pydantic >=1.0.0,<3.0.0
     - requests >=2.0.0,<3.0.0
+    - orjson >=3.9.14,<4.0.0
 
 test:
+  source_files:
+    - python/tests
+    - python/pyproject.toml
   imports:
     - langsmith
     - langsmith.schemas
     - langsmith.client
   requires:
     - pip
+    - pytest
+    - pytest-asyncio
+    - pytest-rerunfailures
+    - attrs
+    - dataclasses-json
   commands:
     - pip check
-    - langsmith -h
+    # Requires dependent package langchain
+    {% set tests_to_skip = "test_as_runnable" %}
+    # Requires building from git repository
+    {% set tests_to_skip = tests_to_skip + " or test_git_info" %}
+    # Test labeled as flaky by upstream, but consistently fails on aarch64.
+    {% set tests_to_skip = tests_to_skip + " or test_client_gc" %}  # [aarch64]
+    # Requires dataclasses-json
+    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://smith.langchain.com/
