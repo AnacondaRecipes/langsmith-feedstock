@@ -40,7 +40,7 @@ test:
     - pytest-asyncio
     - pytest-rerunfailures
     - attrs
-    - dataclasses-json  # [py<312]
+    - dataclasses-json
   commands:
     - pip check
     # Requires dependent package langchain
@@ -50,8 +50,7 @@ test:
     # Test labeled as flaky by upstream, but consistently fails on aarch64.
     {% set tests_to_skip = tests_to_skip + " or test_client_gc" %}  # [aarch64]
     # Requires dataclasses-json
-    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})" --ignore="python/tests/unit_tests/test_client.py"  # [py>=312]
-    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"  # [py<312]
+    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://smith.langchain.com/
