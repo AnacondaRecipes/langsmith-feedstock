@@ -20,6 +20,7 @@ requirements:
     - python
     - poetry-core
     - pip
+    - wheel
   run:
     - python
     - pydantic >=1.0.0,<3.0.0
@@ -65,9 +66,12 @@ about:
   dev_url: https://github.com/langchain-ai/langsmith-sdk
 
 extra:
+  anaconda-services:
+    recipe-maintainers:
+       - bkreider
+    comment: "Dependency for deepeval requested from https://anaconda.zendesk.com/agent/tickets/53943"
+
   recipe-maintainers:
     - pavelzw
     - hinthornw
     - vowelparrot
-  skip-lints:
-    - missing_wheel
