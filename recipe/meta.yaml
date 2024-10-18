@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.1.54" %}
+{% set version = "0.1.129" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/langchain-ai/langsmith-sdk/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: b84646c6972719927bb44ce0d8f1f0753b90cefa3a3a99b112be7ac1ec7683c3
+  sha256: ca998f11e54ebaf8f1e08d6294a7fe7d058949a76d28eca54984436a3ec52666
   
 build:
   number: 0
@@ -21,6 +21,7 @@ requirements:
     - poetry-core
     - pip
   run:
+    - httpx >=0.23.0,<1
     - python
     - pydantic >=1.0.0,<3.0.0
     - requests >=2.0.0,<3.0.0
