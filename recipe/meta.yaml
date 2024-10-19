@@ -24,7 +24,8 @@ requirements:
   run:
     - httpx >=0.23.0,<1
     - python
-    - pydantic >=1.0.0,<3.0.0
+    - pydantic >=1.0.0,<3.0.0  # [py<312]
+    - pydantic >=2.7.4,<3.0.0  # [py>=312]
     - requests >=2.0.0,<3.0.0
     - orjson >=3.9.14,<4.0.0
 
