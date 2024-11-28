@@ -58,6 +58,10 @@ test:
     {% set tests_to_skip = tests_to_skip + " or test_git_info" %}
     # Test labeled as flaky by upstream, but consistently fails on aarch64.
     {% set tests_to_skip = tests_to_skip + " or test_client_gc" %}  # [aarch64]
+    # elapsed time can be more than 3 seconds.
+    {% set tests_to_skip = tests_to_skip + " or test_aevaluate_results" %}
+    # The number 552 of request_calls is greater than 550.
+    {% set tests_to_skip = tests_to_skip + " or test_client_gc_after_autoscale" %}  # [win]
     # Requires dataclasses-json
     - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"
 
