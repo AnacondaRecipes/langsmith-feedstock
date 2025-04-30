@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.1.147" %}
+{% set version = "0.3.39" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/langchain-ai/langsmith-sdk/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: c9317d2ee756c4a6db1e637c7a6a1cd25ff428676801bba31a2b504c1a22ae7f
+  sha256: 5095256a32428652183b32d26baa79f13d79f46df7dff9afde52da8819e3983c
 
 build:
   skip: True  # [py<38 or s390x]
