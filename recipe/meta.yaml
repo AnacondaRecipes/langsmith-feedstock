@@ -13,8 +13,6 @@ build:
   skip: True  # [py<38]
   number: 0
   script: {{ PYTHON }} -m pip install ./python --no-deps --no-build-isolation -vv
-  entry_points:
-    - langsmith = langsmith.cli.main:main
 
 requirements:
   host:
