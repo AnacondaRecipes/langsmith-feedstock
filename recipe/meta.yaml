@@ -10,7 +10,7 @@ source:
   sha256: 5095256a32428652183b32d26baa79f13d79f46df7dff9afde52da8819e3983c
 
 build:
-  skip: True  # [py<38]
+  skip: True  # [py<39]
   number: 0
   script: {{ PYTHON }} -m pip install ./python --no-deps --no-build-isolation -vv
 
@@ -27,6 +27,8 @@ requirements:
     - orjson >=3.9.14,<4.0.0
     - httpx >=0.23.0,<1
     - requests-toolbelt >=1.0.0,<2
+    - zstandard >=0.23.0,<1.0.0
+    - packaging >=23.2,<24.0
   run_constrained:
     - langsmith-pyo3 >=0.1.0,<0.2.0
     - rich >=13.9.4,<14.0.0
