@@ -20,15 +20,21 @@ requirements:
     - poetry-core
     - pip
   run:
-    - httpx >=0.23.0,<1
     - python
     - pydantic >=1.0.0,<3.0.0  # [py<312]
     - pydantic >=2.7.4,<3.0.0  # [py>=312]
     - requests >=2.0.0,<3.0.0
     - orjson >=3.9.14,<4.0.0
+    - httpx >=0.23.0,<1
     - requests-toolbelt >=1.0.0,<2
   run_constrained:
     - langsmith-pyo3 >=0.1.0,<0.2.0
+    - rich >=13.9.4,<14.0.0
+    - pytest >=7.0.0,<8.0.0
+    - openai-agents >=0.0.3,<0.1
+    - opentelemetry-sdk >=1.30.0,<2.0.0
+    - opentelemetry-api >=1.30.0,<2.0.0
+    - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
 
 test:
   source_files:
