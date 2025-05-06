@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.1.147" %}
+{% set version = "0.3.39" %}
 
 package:
   name: {{ name|lower }}
@@ -7,14 +7,12 @@ package:
 
 source:
   url: https://github.com/langchain-ai/langsmith-sdk/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: c9317d2ee756c4a6db1e637c7a6a1cd25ff428676801bba31a2b504c1a22ae7f
+  sha256: 5095256a32428652183b32d26baa79f13d79f46df7dff9afde52da8819e3983c
 
 build:
-  skip: True  # [py<38 or s390x]
+  skip: True  # [py<39]
   number: 0
   script: {{ PYTHON }} -m pip install ./python --no-deps --no-build-isolation -vv
-  entry_points:
-    - langsmith = langsmith.cli.main:main
 
 requirements:
   host:
@@ -22,15 +20,23 @@ requirements:
     - poetry-core
     - pip
   run:
-    - httpx >=0.23.0,<1
     - python
     - pydantic >=1.0.0,<3.0.0  # [py<312]
     - pydantic >=2.7.4,<3.0.0  # [py>=312]
     - requests >=2.0.0,<3.0.0
     - orjson >=3.9.14,<4.0.0
+    - httpx >=0.23.0,<1
     - requests-toolbelt >=1.0.0,<2
+    - zstandard >=0.23.0,<1.0.0
+    - packaging >=23.2
   run_constrained:
     - langsmith-pyo3 >=0.1.0,<0.2.0
+    - rich >=13.9.4,<14.0.0
+    - pytest >=7.0.0,<8.0.0
+    - openai-agents >=0.0.3,<0.1
+    - opentelemetry-sdk >=1.30.0,<2.0.0
+    - opentelemetry-api >=1.30.0,<2.0.0
+    - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
 
 test:
   source_files:
@@ -51,8 +57,8 @@ test:
     - multipart
   commands:
     - pip check
-    - langsmith -h
     # Requires dependent package langchain
+    {% set ignore_tests = " --ignore=python/tests/unit_tests/evaluation/test_runner.py" %}
     {% set tests_to_skip = "test_as_runnable" %}
     # Requires building from git repository
     {% set tests_to_skip = tests_to_skip + " or test_git_info" %}
@@ -63,7 +69,7 @@ test:
     # The number 552 of request_calls is greater than 550.
     {% set tests_to_skip = tests_to_skip + " or test_client_gc_after_autoscale" %}  # [win]
     # Requires dataclasses-json
-    - pytest python/tests/unit_tests -k "not ({{ tests_to_skip }})"
+    - pytest {{ ignore_tests }} python/tests/unit_tests -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://smith.langchain.com/
