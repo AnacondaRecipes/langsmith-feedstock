@@ -29,7 +29,7 @@ requirements:
     - zstandard >=0.23.0
     - packaging >=23.2
   run_constrained:
-    - langsmith-pyo3 >=0.1.0
+    - langsmith-pyo3 >=0.1.0rc2
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api>=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
