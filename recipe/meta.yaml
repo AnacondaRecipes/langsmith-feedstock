@@ -80,7 +80,8 @@ test:
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    - dataclasses-json
+    # dataclasses-json is not maintained anymore and not available in main channel for Python 3.14.
+    - dataclasses-json  # [py<314]
     - multipart
     - attrs
   commands:
