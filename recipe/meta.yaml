@@ -54,7 +54,7 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}  # [win]
 # dataclasses-json is not available in main channel for Python 3.14.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py<314]
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py==314]
 
 
 test:
