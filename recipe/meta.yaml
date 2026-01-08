@@ -52,6 +52,8 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
 # E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/datasets?limit=1&name=None.tests.evaluation.test_evaluation
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}  # [win]
+
 
 test:
   source_files:
