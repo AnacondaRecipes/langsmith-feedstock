@@ -44,27 +44,20 @@ requirements:
     - strands-agents >=0.1.0
     - strands-agents-tools >=0.2.0
 
-# ERROR tests/integration_tests - ModuleNotFoundError: No module named 'vcr'
-# vcrpy 7.0.0 is not available in main channel
-{% set ignore_tests = " --ignore=tests/integration_tests" %}
-# E   ModuleNotFoundError: No module named 'langchain_core'
-# cycle dependency langsmith <-> langchain_core. Try during next version bump.
-# https://github.com/AnacondaRecipes/langchain-core-feedstock/blob/main/recipe/meta.yaml#L24
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/evaluation/test_runner.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_run_helpers.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_client.py" %}
+# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
+# so pytest loads it when running `pytest tests/` from the test prefix.
+# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
+# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
+{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
 # E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/datasets?limit=1&name=None.tests.evaluation.test_evaluation
+# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}
-# dataclasses-json is not available in main channel for Python 3.14.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py==314]
-
 
 test:
   source_files:
     - tests
+    - conftest.py
   imports:
     - langsmith
     - langsmith._expect
@@ -84,19 +77,28 @@ test:
   requires:
     - pip
     - pytest >=7.0.0
+    - pytest-asyncio >=0.21.0
+    - vcrpy >=7.0.0
+    - langchain-core >=1.0.0
     - opentelemetry-sdk >=1.30.0
-    - opentelemetry-api>=1.30.0
+    - opentelemetry-api >=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    # dataclasses-json is not maintained anymore and not available in main channel for Python 3.14.
-    - dataclasses-json  # [py<314]
+    - dataclasses-json >=0.6.4
     - multipart
     - attrs
+    # integration_tests (VCR cassettes; see --vcr-mode=none below)
+    - freezegun >=1.2.0
+    - fastapi >=0.115.0
+    - uvicorn >=0.29.0
+    - openai >=1.0.0
+    - openai-agents >=0.0.3
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest -v tests {{ ignore_tests }}
+    # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
+    - pytest -v tests {{ ignore_tests }} --vcr-mode=none
 
 about:
   home: https://smith.langchain.com
