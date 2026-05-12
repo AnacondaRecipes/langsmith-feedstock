@@ -53,8 +53,8 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
 # E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-
-test:
+# dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
   source_files:
     - tests
     - conftest.py
@@ -85,7 +85,7 @@ test:
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    - dataclasses-json >=0.6.4
+    - dataclasses-json >=0.6.4  # [py<314]
     - multipart
     - attrs
     # integration_tests (VCR cassettes; see --vcr-mode=none below)
