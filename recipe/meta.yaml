@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.8.0" %}
+{% set version = "0.8.3" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 59fe5b2a56bbbe14a08aa76691f84b49e8675dd21e11b57d80c6db8c08bac2e3
+  sha256: 767ff7a8d136ed42926bf99059ac631dc6883542d6e3104b32e71c7625e1fa05
 
 build:
   number: 0
@@ -34,11 +34,15 @@ requirements:
     - langsmith-pyo3 >=0.1.0rc2,<0.2.0
     - rich >=13.9.4
     - pytest >=7.0.0
-    - openai-agents >=0.0.3,<0.1
+    - openai-agents >=0.0.3
     - opentelemetry-sdk >=1.30.0,<2.0.0
     - opentelemetry-api >=1.30.0,<2.0.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
     - claude-agent-sdk>=0.1.0  # [py>=310]
+    - google-adk >=1.0.0
+    - wrapt >=1.16.0
+    - strands-agents >=0.1.0
+    - strands-agents-tools >=0.2.0
 
 # ERROR tests/integration_tests - ModuleNotFoundError: No module named 'vcr'
 # vcrpy 7.0.0 is not available in main channel
@@ -96,7 +100,7 @@ test:
 
 about:
   home: https://smith.langchain.com
-  summary: Client library to connect to the LangSmith language model tracing and evaluation API.
+  summary: Client library to connect to the LangSmith Observability and Evaluation Platform.
   description: |
     LangSmith helps you visualize and evaluate language model applications to help you build better
     performing applications. This is the client library to connect to the LangSmith API.
