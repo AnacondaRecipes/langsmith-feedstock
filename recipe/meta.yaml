@@ -1,22 +1,6 @@
 {% set name = "langsmith" %}
 {% set version = "0.8.0" %}
-{% set ignore_tests = " --ignore=tests/integration_tests" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/evaluation/test_runner.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_run_helpers.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_client.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py==314]
 
-# ERROR tests/integration_tests - ModuleNotFoundError: No module named 'vcr'
-# vcrpy 7.0.0 is not available in main channel
-# E   ModuleNotFoundError: No module named 'langchain_core'
-# cycle dependency langsmith <-> langchain_core. Try during next version bump.
-# https://github.com/AnacondaRecipes/langchain-core-feedstock/blob/main/recipe/meta.yaml#L24
-# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/datasets?limit=1&name=None.tests.evaluation.test_evaluation
-# dataclasses-json is not available in main channel for Python 3.14.
 package:
   name: {{ name|lower }}
   version: {{ version }}
@@ -55,6 +39,24 @@ requirements:
     - opentelemetry-api >=1.30.0,<2.0.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
     - claude-agent-sdk>=0.1.0  # [py>=310]
+
+# ERROR tests/integration_tests - ModuleNotFoundError: No module named 'vcr'
+# vcrpy 7.0.0 is not available in main channel
+{% set ignore_tests = " --ignore=tests/integration_tests" %}
+# E   ModuleNotFoundError: No module named 'langchain_core'
+# cycle dependency langsmith <-> langchain_core. Try during next version bump.
+# https://github.com/AnacondaRecipes/langchain-core-feedstock/blob/main/recipe/meta.yaml#L24
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/evaluation/test_runner.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_run_helpers.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_client.py" %}
+# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
+# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/datasets?limit=1&name=None.tests.evaluation.test_evaluation
+{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}
+# dataclasses-json is not available in main channel for Python 3.14.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py==314]
+
 
 test:
   source_files:
