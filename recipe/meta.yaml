@@ -1,17 +1,17 @@
 {% set name = "langsmith" %}
-{% set version = "0.6.0" %}
+{% set version = "0.8.3" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: b60f1785aed4dac5e01f24db01aa18fa1af258bad4531e045e739438daa3f8c2
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: 767ff7a8d136ed42926bf99059ac631dc6883542d6e3104b32e71c7625e1fa05
 
 build:
   number: 0
-  skip: True  # [py<310]
+  skip: true  # [py<310]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed -vv
 
 requirements:
@@ -29,37 +29,35 @@ requirements:
     - requests-toolbelt >=1.0.0
     - uuid-utils >=0.12.0,<1.0
     - zstandard >=0.23.0
+    - python-xxhash >=3.0.0
   run_constrained:
     - langsmith-pyo3 >=0.1.0rc2,<0.2.0
     - rich >=13.9.4
     - pytest >=7.0.0
-    - openai-agents >=0.0.3,<0.1
+    - openai-agents >=0.0.3
     - opentelemetry-sdk >=1.30.0,<2.0.0
     - opentelemetry-api >=1.30.0,<2.0.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
     - claude-agent-sdk>=0.1.0  # [py>=310]
+    - google-adk >=1.0.0
+    - wrapt >=1.16.0
+    - strands-agents >=0.1.0
+    - strands-agents-tools >=0.2.0
 
-# ERROR tests/integration_tests - ModuleNotFoundError: No module named 'vcr'
-# vcrpy 7.0.0 is not available in main channel
-{% set ignore_tests = " --ignore=tests/integration_tests" %}
-# E   ModuleNotFoundError: No module named 'langchain_core'
-# cycle dependency langsmith <-> langchain_core. Try during next version bump.
-# https://github.com/AnacondaRecipes/langchain-core-feedstock/blob/main/recipe/meta.yaml#L24
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/evaluation/test_runner.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_run_helpers.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_client.py" %}
+# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
+# so pytest loads it when running `pytest tests/` from the test prefix.
+# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
+# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
+{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
 # E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/datasets?limit=1&name=None.tests.evaluation.test_evaluation
+# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_uuid_v7.py" %}
-# dataclasses-json is not available in main channel for Python 3.14.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py==314]
-
-
-test:
+# dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
   source_files:
     - tests
+    - conftest.py
   imports:
     - langsmith
     - langsmith._expect
@@ -79,23 +77,32 @@ test:
   requires:
     - pip
     - pytest >=7.0.0
+    - pytest-asyncio >=0.21.0
+    - vcrpy >=7.0.0
+    - langchain-core >=1.0.0
     - opentelemetry-sdk >=1.30.0
-    - opentelemetry-api>=1.30.0
+    - opentelemetry-api >=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    # dataclasses-json is not maintained anymore and not available in main channel for Python 3.14.
-    - dataclasses-json  # [py<314]
+    - dataclasses-json >=0.6.4  # [py<314]
     - multipart
     - attrs
+    # integration_tests (VCR cassettes; see --vcr-mode=none below)
+    - freezegun >=1.2.0
+    - fastapi >=0.115.0
+    - uvicorn >=0.29.0
+    - openai >=1.0.0
+    - openai-agents >=0.0.3
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest -v tests {{ ignore_tests }}
+    # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
+    - pytest -v tests {{ ignore_tests }} --vcr-mode=none
 
 about:
   home: https://smith.langchain.com
-  summary: Client library to connect to the LangSmith language model tracing and evaluation API.
+  summary: Client library to connect to the LangSmith Observability and Evaluation Platform.
   description: |
     LangSmith helps you visualize and evaluate language model applications to help you build better
     performing applications. This is the client library to connect to the LangSmith API.
