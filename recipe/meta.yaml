@@ -1,49 +1,68 @@
 {% set name = "langsmith" %}
-{% set version = "0.8.3" %}
+{% set version = "0.10.9" %}
 
 package:
-  name: {{ name|lower }}
+  name: {{ name }}
   version: {{ version }}
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 767ff7a8d136ed42926bf99059ac631dc6883542d6e3104b32e71c7625e1fa05
+  sha256: 195bc67c964a6370cb91742ce9fa07ce69bfae47977f0fb3f41d125b3435d03a
 
 build:
   number: 0
-  skip: true  # [py<310]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed -vv
+  skip: true  # [py<310]
 
 requirements:
   host:
+    - pip
     - python
     - hatchling
-    - pip
   run:
     - python
-    - httpx >=0.23.0,<1
-    - orjson >=3.9.14
-    - packaging >=23.2
     - pydantic >=2,<3
     - requests >=2.0.0
+    - orjson >=3.9.14
+    - httpx >=0.23.0,<1
     - requests-toolbelt >=1.0.0
-    - uuid-utils >=0.12.0,<1.0
     - zstandard >=0.23.0
+    - packaging >=23.2
+    - uuid-utils >=0.12.0,<1.0
     - python-xxhash >=3.0.0
+    - websockets >=15.0
+    - anyio>=3.5.0
+    - distro >=1.7.0
+    - sniffio >=1.1
+    - typing_extensions >=4.0.0
   run_constrained:
-    - langsmith-pyo3 >=0.1.0rc2,<0.2.0
-    - rich >=13.9.4
-    - pytest >=7.0.0
+    # langsmith_pyo3
+    - langsmith-pyo3 >=0.1.0
+    # otel
+    - opentelemetry-sdk >=1.30.0
+    - opentelemetry-api >=1.30.0
+    - opentelemetry-exporter-otlp-proto-http >=1.30.0
+    # pipecat
+    - pipecat-ai >=1.0  # [py>=311]
+    - cachetools >=5.0.0
+    # livekit
+    - livekit-agents >=1.0
+    # openai-realtime
+    - openai >=1.50
     - openai-agents >=0.0.3
-    - opentelemetry-sdk >=1.30.0,<2.0.0
-    - opentelemetry-api >=1.30.0,<2.0.0
-    - opentelemetry-exporter-otlp-proto-http >=1.30.0,<2.0.0
-    - claude-agent-sdk>=0.1.0  # [py>=310]
-    - google-adk >=1.0.0
+    # claude-agent-sdk
+    - claude-agent-sdk>=0.1.0  # [py<=310]
+    # google-adk
+    #- google-adk >=1.0.0
     - wrapt >=1.16.0
+    # google-adk-live
+    - google-adk >=2.3.0
+    # strands-agents
     - strands-agents >=0.1.0
     - strands-agents-tools >=0.2.0
-
+    # vcr
+    - vcrpy >=7.0.0
+    
 # Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
 # so pytest loads it when running `pytest tests/` from the test prefix.
 # Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
