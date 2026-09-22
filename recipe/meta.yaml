@@ -1,13 +1,23 @@
 {% set name = "langsmith" %}
-{% set version = "0.10.9" %}
+{% set version = "0.14.0" %}
+{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
 
+# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
+# so pytest loads it when running `pytest tests/` from the test prefix.
+# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
+# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
+# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 package:
   name: {{ name }}
   version: {{ version }}
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 195bc67c964a6370cb91742ce9fa07ce69bfae47977f0fb3f41d125b3435d03a
+  sha256: 294a02addc2358fab390156b74fa942e2dd40b711f6507c5f26b5c208cc89e15
 
 build:
   number: 0
@@ -31,13 +41,14 @@ requirements:
     - uuid-utils >=0.12.0,<1.0
     - python-xxhash >=3.0.0
     - websockets >=15.0
-    - anyio>=3.5.0
+    - anyio >=3.5.0
     - distro >=1.7.0
     - sniffio >=1.1
     - typing_extensions >=4.0.0
+    - httpx2 >=2,<3
   run_constrained:
     # langsmith_pyo3
-    - langsmith-pyo3 >=0.1.0
+    - langsmith-pyo3 >=0.1.0rc2
     # otel
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api >=1.30.0
@@ -46,7 +57,7 @@ requirements:
     - pipecat-ai >=1.0  # [py>=311]
     - cachetools >=5.0.0
     # livekit
-    - livekit-agents >=1.0
+    - livekit-agents >=1.6
     # openai-realtime
     - openai >=1.50
     - openai-agents >=0.0.3
@@ -62,18 +73,36 @@ requirements:
     - strands-agents-tools >=0.2.0
     # vcr
     - vcrpy >=7.0.0
-    
-# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
-# so pytest loads it when running `pytest tests/` from the test prefix.
-# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
-# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
-{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
-# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
-{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
-{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-# dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
+    - google-genai >=1.75
+
+test:
+  commands:
+    - pip check
+    - pip check
+    - pip check
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://smith.langchain.com
+  summary: Client library to connect to the LangSmith Observability and Evaluation Platform.
+  description: |
+    LangSmith helps you visualize and evaluate language model applications to help you build better
+    performing applications. This is the client library to connect to the LangSmith API.
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  doc_url: https://docs.smith.langchain.com
+  dev_url: https://github.com/langchain-ai/langsmith-sdk
+
+extra:
+  recipe-maintainers:
+    - pavelzw
+    - hinthornw
+    - vowelparrot
+
+<conda_recipe_manager.types.SentinelType object at 0x7f06902d6270>:  # dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
   source_files:
     - tests
     - conftest.py
@@ -118,21 +147,3 @@ requirements:
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
     - pytest -v tests {{ ignore_tests }} --vcr-mode=none
-
-about:
-  home: https://smith.langchain.com
-  summary: Client library to connect to the LangSmith Observability and Evaluation Platform.
-  description: |
-    LangSmith helps you visualize and evaluate language model applications to help you build better
-    performing applications. This is the client library to connect to the LangSmith API.
-  license: MIT
-  license_family: MIT
-  license_file: LICENSE
-  doc_url: https://docs.smith.langchain.com
-  dev_url: https://github.com/langchain-ai/langsmith-sdk
-
-extra:
-  recipe-maintainers:
-    - pavelzw
-    - hinthornw
-    - vowelparrot
