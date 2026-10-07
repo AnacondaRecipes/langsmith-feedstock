@@ -115,7 +115,6 @@ test:
     - fastapi >=0.115.0
     - uvicorn >=0.29.0
     - openai >=1.0.0
-    - openai-agents >=0.0.3
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
