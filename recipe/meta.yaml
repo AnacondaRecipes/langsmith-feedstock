@@ -76,10 +76,22 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
 # dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
+# pytest-httpx has no main-channel build — skip the sandbox tests that import it.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_access_delegation.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_async_client.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_async_sandbox.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_aws_role_auth.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_client.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_proxy_config.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_run_config_and_files.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_sandbox.py" %}
+# strands-agents has no main-channel build — skip the strands integration unit test.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_strands_agents.py" %}
 test:
   source_files:
     - tests
     - conftest.py
+    - bench
   imports:
     - langsmith
     - langsmith._expect
@@ -110,6 +122,7 @@ test:
     - dataclasses-json >=0.6.4  # [py<314]
     - multipart
     - attrs
+    - cachetools >=5.0.0
     # integration_tests (VCR cassettes; see --vcr-mode=none below)
     - freezegun >=1.2.0
     - fastapi >=0.115.0
