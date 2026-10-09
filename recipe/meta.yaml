@@ -129,8 +129,11 @@ test:
     - attrs
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
-    - langchain-anthropic
-    - langchain-openai
+    # Pin to upstream's own dev-group ceiling (pyproject.toml): newer ChatAnthropic
+    # releases changed bind_tools()'s serialized kwargs shape, breaking the
+    # pull/push prompt round-trip fixtures in test_client.py.
+    - langchain-anthropic >=1.0.0,<1.5.0
+    - langchain-openai >=1.0.0,<1.4.0
     # integration_tests (VCR cassettes; see --vcr-mode=none below)
     - freezegun >=1.2.0
     - fastapi >=0.115.0
