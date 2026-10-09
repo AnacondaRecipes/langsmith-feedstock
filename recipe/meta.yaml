@@ -77,8 +77,6 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_deepagent_compat.py" %}
 # E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-# dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
 # pytest-httpx has no main-channel build — skip the sandbox tests that import it.
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_access_delegation.py" %}
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_async_client.py" %}
@@ -124,7 +122,7 @@ test:
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    - dataclasses-json >=0.6.4  # [py<314]
+    - dataclasses-json >=0.6.4
     - multipart
     - attrs
     - cachetools >=5.0.0
