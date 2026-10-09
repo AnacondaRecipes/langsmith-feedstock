@@ -90,6 +90,9 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_strands_agents.py" %}
 # google-adk has no main-channel build — skip the Google ADK integration unit test.
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_google_adk.py" %}
+# Windows-only, deterministic: the fixture hardcodes pathlib.Path("/a/b") expecting
+# forward-slash JSON output, but WindowsPath renders it with backslashes.
+{% set deselect_tests = " --deselect=tests/unit_tests/secret/test_secret_serde.py::test_output_is_unchanged_for_payloads_without_secrets[path]" %}
 test:
   source_files:
     - tests
@@ -127,6 +130,7 @@ test:
     - attrs
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
+    - pytest-rerunfailures >=14.0
     # Pin to upstream's own dev-group ceiling (pyproject.toml): newer ChatAnthropic
     # releases changed bind_tools()'s serialized kwargs shape, breaking the
     # pull/push prompt round-trip fixtures in test_client.py.
@@ -145,7 +149,10 @@ test:
     # still `import httpx` directly (pre-dating the httpx2 migration); alias_httpx()
     # makes that resolve to httpx2 process-wide, matching upstream's own test setup
     # (see tests/httpx2_alias/sitecustomize.py + PYTHONPATH in upstream's Makefile).
-    - python -c "import httpx2; httpx2.alias_httpx(); import pytest, sys; sys.exit(pytest.main(sys.argv[1:]))" -v tests {{ ignore_tests }} --vcr-mode=none
+    # --reruns=2: a couple of test_multipart_retry_matrix.py cases race a background
+    # thread against a mock server and occasionally capture an extra log line;
+    # upstream's own dev group carries pytest-rerunfailures for the same reason.
+    - python -c "import httpx2; httpx2.alias_httpx(); import pytest, sys; sys.exit(pytest.main(sys.argv[1:]))" -v tests {{ ignore_tests }} {{ deselect_tests }} --reruns=2 --vcr-mode=none
 
 about:
   home: https://smith.langchain.com
