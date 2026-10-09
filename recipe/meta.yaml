@@ -67,11 +67,14 @@ requirements:
     
 # Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
 # so pytest loads it when running `pytest tests/` from the test prefix.
-# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
-# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
-{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
+# tests/integration_tests (incl. wrappers/) needs a live LangSmith backend + API key
+# (e.g. 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...);
+# skip that subtree — core client behavior is covered by unit_tests.
+{% set ignore_tests = " --ignore=tests/integration_tests" %}
 # E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
 {% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
+# deepagents has no main-channel build — skip the deepagents compat test.
+{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_deepagent_compat.py" %}
 # E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
 {% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
 # dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
@@ -87,6 +90,8 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_sandbox.py" %}
 # strands-agents has no main-channel build — skip the strands integration unit test.
 {% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_strands_agents.py" %}
+# google-adk has no main-channel build — skip the Google ADK integration unit test.
+{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_google_adk.py" %}
 test:
   source_files:
     - tests
@@ -123,6 +128,9 @@ test:
     - multipart
     - attrs
     - cachetools >=5.0.0
+    - pytest-socket >=0.7.0
+    - langchain-anthropic
+    - langchain-openai
     # integration_tests (VCR cassettes; see --vcr-mode=none below)
     - freezegun >=1.2.0
     - fastapi >=0.115.0
@@ -132,7 +140,11 @@ test:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
-    - pytest -v tests {{ ignore_tests }} --vcr-mode=none
+    # langsmith's own client code imports httpx2 as `httpx`, but several test modules
+    # still `import httpx` directly (pre-dating the httpx2 migration); alias_httpx()
+    # makes that resolve to httpx2 process-wide, matching upstream's own test setup
+    # (see tests/httpx2_alias/sitecustomize.py + PYTHONPATH in upstream's Makefile).
+    - python -c "import httpx2; httpx2.alias_httpx(); import pytest, sys; sys.exit(pytest.main(sys.argv[1:]))" -v tests {{ ignore_tests }} --vcr-mode=none
 
 about:
   home: https://smith.langchain.com
