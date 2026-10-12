@@ -64,36 +64,12 @@ requirements:
     - strands-agents-tools >=0.2.0
     # vcr
     - vcrpy >=7.0.0
-    
-# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
-# so pytest loads it when running `pytest tests/` from the test prefix.
-# tests/integration_tests (incl. wrappers/) needs a live LangSmith backend + API key
-# (e.g. 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...);
-# skip that subtree — core client behavior is covered by unit_tests.
-{% set ignore_tests = " --ignore=tests/integration_tests" %}
-# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
-{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-# deepagents has no main-channel build — skip the deepagents compat test.
-{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_deepagent_compat.py" %}
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
-{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-# pytest-httpx has no main-channel build — skip the sandbox tests that import it.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_access_delegation.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_async_client.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_async_sandbox.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_aws_role_auth.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_client.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_proxy_config.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_run_config_and_files.py" %}
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/sandbox/test_sandbox.py" %}
-# strands-agents has no main-channel build — skip the strands integration unit test.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_strands_agents.py" %}
-# google-adk has no main-channel build — skip the Google ADK integration unit test.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/wrappers/test_google_adk.py" %}
-# Windows-only, deterministic: the fixture hardcodes pathlib.Path("/a/b") expecting
-# forward-slash JSON output, but WindowsPath renders it with backslashes.
-{% set deselect_tests = " --deselect=tests/unit_tests/secret/test_secret_serde.py::test_output_is_unchanged_for_payloads_without_secrets[path]" %}
+
 test:
+  # recipe/run_test.py runs the pytest suite (ignore/deselect lists and the
+  # httpx2 aliasing live there); conda-build executes it automatically as part
+  # of the test phase. conftest.py registers --vcr-mode; source_files ships the
+  # sdist test-support files that aren't part of the installed wheel.
   source_files:
     - tests
     - conftest.py
@@ -136,7 +112,7 @@ test:
     # pull/push prompt round-trip fixtures in test_client.py.
     - langchain-anthropic >=1.0.0,<1.5.0
     - langchain-openai >=1.0.0,<1.4.0
-    # integration_tests (VCR cassettes; see --vcr-mode=none below)
+    # integration_tests (VCR cassettes; see run_test.py's --vcr-mode=none)
     - freezegun >=1.2.0
     - fastapi >=0.115.0
     - uvicorn >=0.29.0
@@ -144,15 +120,7 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
-    # langsmith's own client code imports httpx2 as `httpx`, but several test modules
-    # still `import httpx` directly (pre-dating the httpx2 migration); alias_httpx()
-    # makes that resolve to httpx2 process-wide, matching upstream's own test setup
-    # (see tests/httpx2_alias/sitecustomize.py + PYTHONPATH in upstream's Makefile).
-    # --reruns=2: a couple of test_multipart_retry_matrix.py cases race a background
-    # thread against a mock server and occasionally capture an extra log line;
-    # upstream's own dev group carries pytest-rerunfailures for the same reason.
-    - python -c "import httpx2; httpx2.alias_httpx(); import pytest, sys; sys.exit(pytest.main(sys.argv[1:]))" -v tests {{ ignore_tests }} {{ deselect_tests }} --reruns=2 --vcr-mode=none
+    # run_test.py (in this recipe dir) runs the actual pytest suite.
 
 about:
   home: https://smith.langchain.com
