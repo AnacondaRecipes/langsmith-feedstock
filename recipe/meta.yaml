@@ -52,8 +52,14 @@ requirements:
     - openai-agents >=0.0.3
     # gemini-live
     - google-genai >=1.75
-    # claude-agent-sdk
-    - claude-agent-sdk>=0.1.0  # [py<=310]
+    # claude-agent-sdk: python_version>='3.10' in pyproject.toml, which every
+    # build we ship already satisfies (build/skip: true # [py<310] above) —
+    # no selector needed. Previously had an inverted [py<=310] selector that
+    # silently dropped this constraint for py311+ builds.
+    - claude-agent-sdk >=0.1.0
+    # pytest extra
+    - pytest >=7.0.0
+    - rich >=13.9.4
     # google-adk
     #- google-adk >=1.0.0
     - wrapt >=1.16.0
@@ -95,21 +101,23 @@ test:
     - pytest >=7.0.0
     - pytest-asyncio >=0.21.0
     - vcrpy >=7.0.0
-    - langchain-core >=1.0.0
+    # Same upstream dev-group ceiling as langchain-anthropic/-openai below.
+    - langchain-core >=1.0.0,<1.5.0
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api >=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
     - dataclasses-json >=0.6.4
-    - multipart
+    - multipart >=1.0.0
     - attrs
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
     - pytest-rerunfailures >=14.0
-    # Pin to upstream's own dev-group ceiling (pyproject.toml): newer ChatAnthropic
-    # releases changed bind_tools()'s serialized kwargs shape, breaking the
-    # pull/push prompt round-trip fixtures in test_client.py.
+    # Pinned to upstream's own dev-group ceiling (pyproject.toml). Confirmed
+    # necessary for langchain-anthropic: newer ChatAnthropic releases changed
+    # bind_tools()'s serialized kwargs shape, breaking the pull/push prompt
+    # round-trip fixtures in test_client.py. langchain-openai capped to match.
     - langchain-anthropic >=1.0.0,<1.5.0
     - langchain-openai >=1.0.0,<1.4.0
     # integration_tests (VCR cassettes; see run_test.py's --vcr-mode=none)
