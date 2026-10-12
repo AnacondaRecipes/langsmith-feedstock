@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.10.9" %}
+{% set version = "0.14.0" %}
 
 package:
   name: {{ name }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 195bc67c964a6370cb91742ce9fa07ce69bfae47977f0fb3f41d125b3435d03a
+  sha256: 294a02addc2358fab390156b74fa942e2dd40b711f6507c5f26b5c208cc89e15
 
 build:
   number: 0
@@ -24,20 +24,20 @@ requirements:
     - pydantic >=2,<3
     - requests >=2.0.0
     - orjson >=3.9.14
-    - httpx >=0.23.0,<1
+    - httpx2 >=2,<3
     - requests-toolbelt >=1.0.0
     - zstandard >=0.23.0
     - packaging >=23.2
     - uuid-utils >=0.12.0,<1.0
     - python-xxhash >=3.0.0
     - websockets >=15.0
-    - anyio>=3.5.0
+    - anyio >=3.5.0
     - distro >=1.7.0
     - sniffio >=1.1
     - typing_extensions >=4.0.0
   run_constrained:
     # langsmith_pyo3
-    - langsmith-pyo3 >=0.1.0
+    - langsmith-pyo3 >=0.1.0rc2
     # otel
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api >=1.30.0
@@ -46,12 +46,20 @@ requirements:
     - pipecat-ai >=1.0  # [py>=311]
     - cachetools >=5.0.0
     # livekit
-    - livekit-agents >=1.0
+    - livekit-agents >=1.6
     # openai-realtime
     - openai >=1.50
     - openai-agents >=0.0.3
-    # claude-agent-sdk
-    - claude-agent-sdk>=0.1.0  # [py<=310]
+    # gemini-live
+    - google-genai >=1.75
+    # claude-agent-sdk: python_version>='3.10' in pyproject.toml, which every
+    # build we ship already satisfies (build/skip: true # [py<310] above) —
+    # no selector needed. Previously had an inverted [py<=310] selector that
+    # silently dropped this constraint for py311+ builds.
+    - claude-agent-sdk >=0.1.0
+    # pytest extra
+    - pytest >=7.0.0
+    - rich >=13.9.4
     # google-adk
     #- google-adk >=1.0.0
     - wrapt >=1.16.0
@@ -62,21 +70,16 @@ requirements:
     - strands-agents-tools >=0.2.0
     # vcr
     - vcrpy >=7.0.0
-    
-# Root conftest.py (from the sdist) registers --vcr-mode; include it in source_files
-# so pytest loads it when running `pytest tests/` from the test prefix.
-# Optional-provider integration wrappers (Azure, Gemini, Google ADK, strands, …) need
-# many extra conda packages — skip that subtree; core integration runs with VCR cassettes.
-{% set ignore_tests = " --ignore=tests/integration_tests/wrappers" %}
-# E   openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
-{% set ignore_tests = ignore_tests + " --ignore=tests/external/test_instructor_evals.py" %}
-# E requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.smith.langchain.com/...
-{% set ignore_tests = ignore_tests + " --ignore=tests/evaluation/test_evaluation.py" %}
-# dataclasses-json has no main-channel build for Python 3.14+ — skip tests that import it.
-{% set ignore_tests = ignore_tests + " --ignore=tests/unit_tests/test_utils.py" %}  # [py>=314]
+
+test:
+  # recipe/run_test.py runs the pytest suite (ignore/deselect lists and the
+  # httpx2 aliasing live there); conda-build executes it automatically as part
+  # of the test phase. conftest.py registers --vcr-mode; source_files ships the
+  # sdist test-support files that aren't part of the installed wheel.
   source_files:
     - tests
     - conftest.py
+    - bench
   imports:
     - langsmith
     - langsmith._expect
@@ -98,26 +101,34 @@ requirements:
     - pytest >=7.0.0
     - pytest-asyncio >=0.21.0
     - vcrpy >=7.0.0
-    - langchain-core >=1.0.0
+    # Same upstream dev-group ceiling as langchain-anthropic/-openai below.
+    - langchain-core >=1.0.0,<1.5.0
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api >=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
     - anthropic >=0.45.0
     - pytest-tornasync
-    - dataclasses-json >=0.6.4  # [py<314]
-    - multipart
+    - dataclasses-json >=0.6.4
+    - multipart >=1.0.0
     - attrs
-    # integration_tests (VCR cassettes; see --vcr-mode=none below)
+    - cachetools >=5.0.0
+    - pytest-socket >=0.7.0
+    - pytest-rerunfailures >=14.0
+    # Pinned to upstream's own dev-group ceiling (pyproject.toml). Confirmed
+    # necessary for langchain-anthropic: newer ChatAnthropic releases changed
+    # bind_tools()'s serialized kwargs shape, breaking the pull/push prompt
+    # round-trip fixtures in test_client.py. langchain-openai capped to match.
+    - langchain-anthropic >=1.0.0,<1.5.0
+    - langchain-openai >=1.0.0,<1.4.0
+    # integration_tests (VCR cassettes; see run_test.py's --vcr-mode=none)
     - freezegun >=1.2.0
     - fastapi >=0.115.0
     - uvicorn >=0.29.0
     - openai >=1.0.0
-    - openai-agents >=0.0.3
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    # --vcr-mode=none: replay committed cassettes only (no live AI API record) in CI.
-    - pytest -v tests {{ ignore_tests }} --vcr-mode=none
+    # run_test.py (in this recipe dir) runs the actual pytest suite.
 
 about:
   home: https://smith.langchain.com
