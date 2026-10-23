@@ -47,6 +47,8 @@ IGNORE = [
     "tests/unit_tests/sandbox/test_endpoints.py",
     "tests/unit_tests/sandbox/test_tracing.py",
     "tests/unit_tests/sandbox/test_verify.py",
+    #  ModuleNotFoundError: No module named 'bench'
+    "tests/unit_tests/test_background_thread.py",
 ]
 
 DESELECT = [

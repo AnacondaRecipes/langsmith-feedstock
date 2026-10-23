@@ -122,6 +122,7 @@ test:
     - dataclasses-json >=0.6.4
     - multipart >=1.0.0
     - attrs
+    - rich
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
     - pytest-rerunfailures >=14.0
