@@ -1,5 +1,5 @@
 {% set name = "langsmith" %}
-{% set version = "0.14.0" %}
+{% set version = "0.14.12" %}
 
 package:
   name: {{ name }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 294a02addc2358fab390156b74fa942e2dd40b711f6507c5f26b5c208cc89e15
+  sha256: b4d6a24ed74333095da476803ad9d22ee35f9dae1052cebf1e366d3889a9b675
 
 build:
   number: 0
@@ -19,6 +19,10 @@ requirements:
     - pip
     - python
     - hatchling
+    # 0.14.x moved the readme to a dynamic hatch metadata hook
+    # ([tool.hatch.metadata.hooks.fancy-pypi-readme]); without the plugin in
+    # host, `pip install . --no-build-isolation` fails at metadata prep.
+    - hatch-fancy-pypi-readme
   run:
     - python
     - pydantic >=2,<3
@@ -31,10 +35,10 @@ requirements:
     - uuid-utils >=0.12.0,<1.0
     - python-xxhash >=3.0.0
     - websockets >=15.0
-    - anyio >=3.5.0
-    - distro >=1.7.0
+    - anyio >=3.5.0,<5
+    - distro >=1.7.0,<2
     - sniffio >=1.1
-    - typing_extensions >=4.0.0
+    - typing_extensions >=4.14,<5
   run_constrained:
     # langsmith_pyo3
     - langsmith-pyo3 >=0.1.0rc2
@@ -70,16 +74,22 @@ requirements:
     - strands-agents-tools >=0.2.0
     # vcr
     - vcrpy >=7.0.0
+    # aiohttp (new extra in 0.14.x; httpx-aiohttp not yet on pkgs/main, so the
+    # constraint stays inert there until the dep is packaged)
+    - aiohttp >=3.14.3,<4
+    - httpx-aiohttp >=0.1.9
+    # sandbox-auth (PyJWT[crypto]>=2.8.0; conda pyjwt + cryptography cover it)
+    - pyjwt >=2.8.0
+    - cryptography >=2.8
 
 test:
   # recipe/run_test.py runs the pytest suite (ignore/deselect lists and the
   # httpx2 aliasing live there); conda-build executes it automatically as part
-  # of the test phase. conftest.py registers --vcr-mode; source_files ships the
-  # sdist test-support files that aren't part of the installed wheel.
+  # of the test phase. The 0.14.x sdist no longer ships a root conftest.py
+  # (the --vcr-mode option moved into the ignored tests/integration_tests/
+  # conftest.py) nor bench/.
   source_files:
     - tests
-    - conftest.py
-    - bench
   imports:
     - langsmith
     - langsmith._expect
@@ -100,7 +110,8 @@ test:
     - pip
     - pytest >=7.0.0
     - pytest-asyncio >=0.21.0
-    - vcrpy >=7.0.0
+    # tests/test_files.py (0.14.x Stainless suite) imports dirty_equals
+    - dirty-equals >=0.6.0
     # Same upstream dev-group ceiling as langchain-anthropic/-openai below.
     - langchain-core >=1.0.0,<1.5.0
     - opentelemetry-sdk >=1.30.0
@@ -120,10 +131,10 @@ test:
     # round-trip fixtures in test_client.py. langchain-openai capped to match.
     - langchain-anthropic >=1.0.0,<1.5.0
     - langchain-openai >=1.0.0,<1.4.0
-    # integration_tests (VCR cassettes; see run_test.py's --vcr-mode=none)
-    - freezegun >=1.2.0
-    - fastapi >=0.115.0
-    - uvicorn >=0.29.0
+    # openai: unit_tests/wrappers realtime/processing tests. The other
+    # integration_tests-only deps (vcrpy/freezegun/fastapi/uvicorn) left with
+    # the 0.14.x restructure: the sdist dropped the root conftest.py that
+    # imported vcr, and tests/integration_tests is ignored in run_test.py.
     - openai >=1.0.0
   commands:
     - pip check
@@ -140,7 +151,7 @@ about:
   license_family: MIT
   license_file: LICENSE
   doc_url: https://docs.smith.langchain.com
-  dev_url: https://github.com/langchain-ai/langsmith-sdk
+  dev_url: https://github.com/langchain-ai/langsmith-python
 
 extra:
   recipe-maintainers:
