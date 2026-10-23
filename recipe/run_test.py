@@ -41,6 +41,8 @@ IGNORE = [
     "tests/unit_tests/wrappers/test_strands_agents.py",
     # google-adk has no main-channel build.
     "tests/unit_tests/wrappers/test_google_adk.py",
+    # ModuleNotFoundError: No module named 'bench'
+    "tests/unit_tests/test_background_thread.py",
 ]
 
 DESELECT = [
