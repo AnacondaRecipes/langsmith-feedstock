@@ -6,8 +6,8 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: b4d6a24ed74333095da476803ad9d22ee35f9dae1052cebf1e366d3889a9b675
+  url: https://github.com/langchain-ai/{{ name }}-python/archive/refs/tags/v{{ version }}.tar.gz
+  sha256: 2cea1938d6374a610f36235952e7058dbb8068f060cadc4ec8b223a4a25e3dc0
 
 build:
   number: 0
@@ -90,6 +90,9 @@ test:
   # conftest.py) nor bench/.
   source_files:
     - tests
+    - conftest.py
+    - README.md
+    - bench
   imports:
     - langsmith
     - langsmith._expect
@@ -122,10 +125,12 @@ test:
     - dataclasses-json >=0.6.4
     - multipart >=1.0.0
     - attrs
-    - rich
+    - vcrpy>=7.0.0
+    - rich >=13.9.4
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
     - pytest-rerunfailures >=14.0
+    - pytest-benchmark >=5.1.0
     # Pinned to upstream's own dev-group ceiling (pyproject.toml). Confirmed
     # necessary for langchain-anthropic: newer ChatAnthropic releases changed
     # bind_tools()'s serialized kwargs shape, breaking the pull/push prompt
