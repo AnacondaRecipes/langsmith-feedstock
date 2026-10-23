@@ -41,6 +41,14 @@ IGNORE = [
     "tests/unit_tests/wrappers/test_strands_agents.py",
     # google-adk has no main-channel build.
     "tests/unit_tests/wrappers/test_google_adk.py",
+    # respx has no main-channel build — this generated-client test imports it.
+    "tests/test_client.py",
+    # New 0.14.x sandbox tests; pytest-httpx has no main-channel build.
+    "tests/unit_tests/sandbox/test_endpoints.py",
+    "tests/unit_tests/sandbox/test_tracing.py",
+    "tests/unit_tests/sandbox/test_verify.py",
+    "tests/test_response.py",
+    "tests/test_streaming.py",
 ]
 
 DESELECT = [
@@ -51,7 +59,7 @@ DESELECT = [
     "::test_output_is_unchanged_for_payloads_without_secrets[path]",
 ]
 
-args = ["-v", "tests", "--vcr-mode=none"]
+args = ["-v", "tests"]
 args += [f"--ignore={path}" for path in IGNORE]
 args += [f"--deselect={node_id}" for node_id in DESELECT]
 # A couple of test_multipart_retry_matrix.py cases race a background thread
