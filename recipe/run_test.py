@@ -41,6 +41,12 @@ IGNORE = [
     "tests/unit_tests/wrappers/test_strands_agents.py",
     # google-adk has no main-channel build.
     "tests/unit_tests/wrappers/test_google_adk.py",
+    # respx has no main-channel build — this generated-client test imports it.
+    "tests/test_client.py",
+    # New 0.14.x sandbox tests; pytest-httpx has no main-channel build.
+    "tests/unit_tests/sandbox/test_endpoints.py",
+    "tests/unit_tests/sandbox/test_tracing.py",
+    "tests/unit_tests/sandbox/test_verify.py",
 ]
 
 DESELECT = [
@@ -51,9 +57,16 @@ DESELECT = [
     "::test_output_is_unchanged_for_payloads_without_secrets[path]",
 ]
 
-args = ["-v", "tests", "--vcr-mode=none"]
+args = ["-v", "tests"]
 args += [f"--ignore={path}" for path in IGNORE]
 args += [f"--deselect={node_id}" for node_id in DESELECT]
+# Upstream sets these in pyproject.toml (not shipped to the test dir); without
+# them the async fixtures fail (they expect a session-scoped event loop).
+args += ["-o", "asyncio_mode=auto", "-o", "asyncio_default_fixture_loop_scope=session"]
+# The root conftest.py registers --vcr-mode with default "once", which records;
+# "none" makes it replay-only, so an unrecorded request fails instead of
+# hitting the network.
+args += ["--vcr-mode=none"]
 # A couple of test_multipart_retry_matrix.py cases race a background thread
 # against a mock server and occasionally capture an extra log line; upstream's
 # own dev group carries pytest-rerunfailures for the same reason.
