@@ -47,8 +47,6 @@ IGNORE = [
     "tests/unit_tests/sandbox/test_endpoints.py",
     "tests/unit_tests/sandbox/test_tracing.py",
     "tests/unit_tests/sandbox/test_verify.py",
-    "tests/test_response.py",
-    "tests/test_streaming.py",
 ]
 
 DESELECT = [
@@ -62,6 +60,13 @@ DESELECT = [
 args = ["-v", "tests"]
 args += [f"--ignore={path}" for path in IGNORE]
 args += [f"--deselect={node_id}" for node_id in DESELECT]
+# Upstream sets these in pyproject.toml (not shipped to the test dir); without
+# them the async fixtures fail (they expect a session-scoped event loop).
+args += ["-o", "asyncio_mode=auto", "-o", "asyncio_default_fixture_loop_scope=session"]
+# The root conftest.py registers --vcr-mode with default "once", which records;
+# "none" makes it replay-only, so an unrecorded request fails instead of
+# hitting the network.
+args += ["--vcr-mode=none"]
 # A couple of test_multipart_retry_matrix.py cases race a background thread
 # against a mock server and occasionally capture an extra log line; upstream's
 # own dev group carries pytest-rerunfailures for the same reason.

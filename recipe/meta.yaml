@@ -37,7 +37,7 @@ requirements:
     - websockets >=15.0
     - anyio >=3.5.0,<5
     - distro >=1.7.0,<2
-    - sniffio >=1.1
+    - sniffio
     - typing_extensions >=4.14,<5
   run_constrained:
     # langsmith_pyo3
@@ -80,14 +80,14 @@ requirements:
     - httpx-aiohttp >=0.1.9
     # sandbox-auth (PyJWT[crypto]>=2.8.0; conda pyjwt + cryptography cover it)
     - pyjwt >=2.8.0
-    - cryptography >=2.8
+    - cryptography >=3.4.0  # PyJWT's crypto extra floor
 
 test:
   # recipe/run_test.py runs the pytest suite (ignore/deselect lists and the
   # httpx2 aliasing live there); conda-build executes it automatically as part
-  # of the test phase. The 0.14.x sdist no longer ships a root conftest.py
-  # (the --vcr-mode option moved into the ignored tests/integration_tests/
-  # conftest.py) nor bench/.
+  # of the test phase. The source is the GitHub tag archive (not the PyPI sdist)
+  # because the tests need the root conftest.py, bench/ (test_background_thread.py
+  # imports bench.hybrid_tracing) and README.md (test_files.py).
   source_files:
     - tests
     - conftest.py
@@ -125,7 +125,8 @@ test:
     - dataclasses-json >=0.6.4
     - multipart >=1.0.0
     - attrs
-    - vcrpy>=7.0.0
+    # root conftest.py imports vcr
+    - vcrpy >=7.0.0
     - rich >=13.9.4
     - cachetools >=5.0.0
     - pytest-socket >=0.7.0
@@ -138,9 +139,8 @@ test:
     - langchain-anthropic >=1.0.0,<1.5.0
     - langchain-openai >=1.0.0,<1.4.0
     # openai: unit_tests/wrappers realtime/processing tests. The other
-    # integration_tests-only deps (vcrpy/freezegun/fastapi/uvicorn) left with
-    # the 0.14.x restructure: the sdist dropped the root conftest.py that
-    # imported vcr, and tests/integration_tests is ignored in run_test.py.
+    # integration_tests-only deps (freezegun/fastapi/uvicorn) left with the
+    # 0.14.x restructure: tests/integration_tests is ignored in run_test.py.
     - openai >=1.0.0
   commands:
     - pip check
