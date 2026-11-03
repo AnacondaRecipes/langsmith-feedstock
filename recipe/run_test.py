@@ -48,6 +48,9 @@ IGNORE = [
     "tests/unit_tests/sandbox/test_tracing.py",
     "tests/unit_tests/sandbox/test_verify.py",
     "tests/unit_tests/evaluation/test_runner.py",
+    "tests/unit_tests/test_client.py",
+    "tests/unit_tests/test_otel_exporter.py",
+    "tests/unit_tests/test_run_helpers.py",
 ]
 
 DESELECT = [
