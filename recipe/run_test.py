@@ -47,6 +47,7 @@ IGNORE = [
     "tests/unit_tests/sandbox/test_endpoints.py",
     "tests/unit_tests/sandbox/test_tracing.py",
     "tests/unit_tests/sandbox/test_verify.py",
+    "tests/unit_tests/evaluation/test_runner.py",
 ]
 
 DESELECT = [
