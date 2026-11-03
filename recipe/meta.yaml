@@ -116,7 +116,7 @@ test:
     # tests/test_files.py (0.14.x Stainless suite) imports dirty_equals
     - dirty-equals >=0.6.0
     # Same upstream dev-group ceiling as langchain-anthropic/-openai below.
-    - langchain-core >=1.0.0,<1.5.0
+    # - langchain-core >=1.0.0,<1.5.0
     - opentelemetry-sdk >=1.30.0
     - opentelemetry-api >=1.30.0
     - opentelemetry-exporter-otlp-proto-http >=1.30.0
@@ -136,8 +136,8 @@ test:
     # necessary for langchain-anthropic: newer ChatAnthropic releases changed
     # bind_tools()'s serialized kwargs shape, breaking the pull/push prompt
     # round-trip fixtures in test_client.py. langchain-openai capped to match.
-    - langchain-anthropic >=1.0.0,<1.5.0
-    - langchain-openai >=1.0.0,<1.4.0
+    # - langchain-anthropic >=1.0.0,<1.5.0
+    # - langchain-openai >=1.0.0,<1.4.0
     # openai: unit_tests/wrappers realtime/processing tests. The other
     # integration_tests-only deps (freezegun/fastapi/uvicorn) left with the
     # 0.14.x restructure: tests/integration_tests is ignored in run_test.py.
